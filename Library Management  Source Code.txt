@@ -1,0 +1,211 @@
+
+
+Create Database and Tables in Sql Server 
+
+
+CREATE DATABASE LibraryDB;
+
+
+USE LibraryDB;
+
+CREATE TABLE logintab(
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Username NVARCHAR(50),
+    Password NVARCHAR(50)
+);
+
+CREATE TABLE students (
+    StudentID INT IDENTITY(1,1) PRIMARY KEY,
+    Student_Name NVARCHAR(100) NOT NULL,
+    Gender NVARCHAR(20),
+    Email NVARCHAR(100) UNIQUE,
+    Phone_Number NVARCHAR(20),
+    Address NVARCHAR(50)
+);
+
+CREATE TABLE books (
+    BookID INT IDENTITY(1,1) PRIMARY KEY,
+    Book_Name NVARCHAR(100) NOT NULL,
+    Author NVARCHAR(100),
+    Publisher NVARCHAR(100)
+
+);
+
+CREATE TABLE issue (
+    IssueID INT IDENTITY(1,1) PRIMARY KEY,
+    StudentID INT,
+    BookID INT,
+    Issue_Date DATETIME,
+    Due_Date DATETIME,
+    Return_Date DATETIME,
+    CONSTRAINT FK_issue_students FOREIGN KEY (StudentID) REFERENCES students(StudentID),
+    CONSTRAINT FK_issue_books FOREIGN KEY (BookID) REFERENCES books(BookID)
+);
+
+CREATE TABLE librarians (
+    LibrarianID INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) UNIQUE,
+    Phone_Number NVARCHAR(20)
+  
+);
+
+CREATE TABLE fine (
+    FineID INT IDENTITY(1,1) PRIMARY KEY,
+    IssueID INT,
+    Amount DECIMAL(10,2),
+    CONSTRAINT FK_fine_issue FOREIGN KEY (IssueID) REFERENCES issue(IssueID)
+    
+);
+
+INSERT INTO logintab VALUES('admin','12345');
+INSERT INTO logintab VALUES('mycodingproject','5656');
+
+
+
+ 
+
+ Login Button Code
+
+ if (string.IsNullOrWhiteSpace(txtUsername.Text) || string.IsNullOrWhiteSpace(txtPassword.Text))
+{
+    MessageBox.Show("Please enter username and password");
+    return;
+}
+
+SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LibraryDB;Integrated Security=True;TrustServerCertificate=True");
+con.Open();
+SqlCommand cmd = new SqlCommand("SELECT * FROM logintab WHERE Username=@username AND Password=@password", con);
+cmd.Parameters.AddWithValue("@username", txtUsername.Text.Trim());
+cmd.Parameters.AddWithValue("@password", txtPassword.Text.Trim());
+
+SqlDataAdapter da = new SqlDataAdapter(cmd);
+DataTable dt = new DataTable();
+da.Fill(dt);
+
+if (dt.Rows.Count > 0)
+{
+    Main mn = new Main();
+    mn.Show();
+}
+else
+{
+    MessageBox.Show("Invalid Login");
+}
+con.Close();
+
+
+
+
+
+ Student.cs
+
+ Insert Button Code
+
+
+ SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LibraryDB;Integrated Security=True;TrustServerCertificate=True");
+con.Open();
+SqlCommand cmd = new SqlCommand("INSERT INTO students (Student_Name, Gender, Email, Phone_Number, Address) " +
+    "VALUES (@Student_Name, @Gender, @Email, @Phone_Number, @Address)", con);
+cmd.Parameters.AddWithValue("@Student_Name", textBox2.Text);
+cmd.Parameters.AddWithValue("@Gender", textBox3.Text);
+cmd.Parameters.AddWithValue("@Email", textBox4.Text);
+cmd.Parameters.AddWithValue("@Phone_Number", textBox5.Text);
+cmd.Parameters.AddWithValue("@Address", textBox6.Text);
+cmd.ExecuteNonQuery();
+con.Close();
+MessageBox.Show("Record Inserted");
+LoadStudents();
+
+
+
+ Update Button Code
+
+ SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LibraryDB;Integrated Security=True;TrustServerCertificate=True");
+con.Open();
+SqlCommand cmd = new SqlCommand("UPDATE students SET Student_Name=@Student_Name, Gender=@Gender, Email=@Email, Phone_Number=@Phone_Number, Address=@Address " +
+   "WHERE studentid=@studentid", con);
+cmd.Parameters.AddWithValue("@StudentID", int.Parse(textBox1.Text));
+cmd.Parameters.AddWithValue("@Student_Name", textBox2.Text);
+cmd.Parameters.AddWithValue("@Gender", textBox3.Text);
+cmd.Parameters.AddWithValue("@Email", textBox4.Text);
+cmd.Parameters.AddWithValue("@Phone_Number", textBox5.Text);
+cmd.Parameters.AddWithValue("@Address", textBox6.Text);
+cmd.ExecuteNonQuery();
+con.Close();
+MessageBox.Show("Record Updated");
+LoadStudents();
+
+
+
+ Delete Button Code
+
+ if (MessageBox.Show("Are you sure you want to delete?",
+    "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+
+{
+    SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LibraryDB;Integrated Security=True;TrustServerCertificate=True");
+    con.Open();
+    SqlCommand cmd = new SqlCommand("DELETE FROM students WHERE studentid=@studentid", con);
+    cmd.Parameters.AddWithValue("@StudentID", int.Parse(textBox1.Text));
+    cmd.ExecuteNonQuery();
+    con.Close();
+    MessageBox.Show("Record Deleted");
+    LoadStudents();
+}
+
+
+
+ Dashboard.cs Code
+
+ private void display1()
+{
+    SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LibraryDB;Integrated Security=True;TrustServerCertificate=True");
+    con.Open();
+    SqlCommand comm = new SqlCommand("SELECT COUNT(*) FROM students", con);
+    Int32 count = Convert.ToInt32(comm.ExecuteScalar());
+    if (count > 0)
+    {
+        lblCount1.Text = Convert.ToString(count.ToString()); //For example a Label
+    }
+    else
+    {
+        lblCount1.Text = "0";
+    }
+    con.Close(); //Remember close the connection
+}
+
+private void display2()
+{
+    SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LibraryDB;Integrated Security=True;TrustServerCertificate=True");
+    con.Open();
+    SqlCommand comm = new SqlCommand("SELECT COUNT(*) FROM books", con);
+    Int32 count = Convert.ToInt32(comm.ExecuteScalar());
+    if (count > 0)
+    {
+        lblCount2.Text = Convert.ToString(count.ToString()); //For example a Label
+    }
+    else
+    {
+        lblCount2.Text = "0";
+    }
+    con.Close(); //Remember close the connection
+}
+
+private void display3()
+{
+    SqlConnection con = new SqlConnection(@"Data Source=localhost;Initial Catalog=LibraryDB;Integrated Security=True;TrustServerCertificate=True");
+    con.Open();
+    SqlCommand comm = new SqlCommand("SELECT COUNT(*) FROM librarians", con);
+    Int32 count = Convert.ToInt32(comm.ExecuteScalar());
+    if (count > 0)
+    {
+        lblCount3.Text = Convert.ToString(count.ToString()); //For example a Label
+    }
+    else
+    {
+        lblCount3.Text = "0";
+    }
+    con.Close(); //Remember close the connection
+}
+ 
